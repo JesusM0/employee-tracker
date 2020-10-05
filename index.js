@@ -153,30 +153,4 @@ addEmployee = function() {
     .then (() => viewEmployee())
 };
 
-updateEmployeeRole = function(){
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'employeeList',
-            message: 'Enter Employee ID To Be Updated.',
-        }, 
-        {
-            type: 'input',
-            name: 'newRole',
-            message: 'Enter New Role ID For Employee'
-        },
-    ]) .then (({newRole, employeeList}) => {
-        'UPDATE employee SET ? WHERE  ?', 
-        [
-            {
-                role_id: newRole
-            },
-            {
-                id: employeeList
-            }
-        ]
-
-    }) .then (() => viewEmployee()) 
-
-}
 trackerQuestions();
