@@ -1,235 +1,159 @@
-const inquirer = require('inquirer');
 const db = require('./db/database');
-const { connection } = require('./db/connection');
-const cTable = require('console.table');
+const inquirer = require('inquirer');
+const connection = require('./db/connection');
 
-function trackerQuestions() {
 
-    inquirer.prompt([
-        {
-            type: 'list',
-            name: 'start',
-            message: 'Choose An Option From The Given Choices.',
-            choices: ['View Departments', 'View Employee Roles', 'View List of Employees', 'Add a Department', 'Add Employee Role', 'Add New Employee', 'Update Employee Role', 'Quit']
-        }
-    ])
-        .then(choice => {
-            //Maybe Use Cases instead of Ifs here??
-            switch (choice.start) {
-                case 'View Departments':
-                    departmentList();
-                    break;
-                case 'View Employee Roles':
-                    employeeRoles();
-                    break;
-                case 'View List of Employees':
-                    employeeList();
-                    break;
-                case 'Add a Department':
-                    addDepartment();
-                    break;
-                case 'Add Employee Role':
-                    addRole();
-                    break;
-                case 'Add New Employee':
-                    addEmployee();
-                    break;
-                case 'Update Employee Role':
-                    updateEmployee
-                    break;
-                case 'Quit':
-                    break;
-                    //Seemed to have worked stil?? Check one last time before committing
-            }
-        })
+function trackerQuestions() {}
+inquirer.prompt([
+    {
+        type: 'list',
+        name: 'start',
+        message: 'Choose An Option Below.',
+        choices: ['View Departments', 'View Roles', 'View Employees',
+        'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role']
+    }
+
+])
+.then((choice) => {
+    switch (choice.start) {
+        case "View Departments":
+            viewDepartment(); 
+            break;
+        case "View Roles":
+            viewRole();
+            break;
+        case "View Employees":
+            viewEmployee();
+            break;
+        case "Add Department":
+            addDepartment();
+            break;
+        case "Add Role":
+            addRole();
+            break;
+        case "Add Employee": 
+            addEmployee();
+            break;
+        case "Update Employee Role":
+            updateEmployeeRole();
+            break;
+    }   
+
+})
+
+viewDepartment = function() {
+    db.showDepartments()
+    .then(([rows]) =>  {
+       console.table(rows)
+    })
+    .then(() => trackerQuestions())
+}; 
+
+viewRole = function() {
+    db.showEmployeesRoles()
+    .then(([rows]) =>  {
+       console.table(rows)
+    })
+    .then(() => trackerQuestions())
+}; 
+viewEmployee = function() {
+    db.showEmployeesList()
+    .then(([rows]) =>  {
+       console.table(rows)
+    })
+    .then(() => trackerQuestions())
 };
 
-function departmentList() {
-    db.viewDepartList()
-        .then(([rows]) => {
-            console.table(rows)
-        })
-        .then(() => trackerQuestions())
-};
 
-function employeeRoles() {
-    db.viewEmployeeRoles()
-        .then(([rows]) => {
-            console.table(rows)
-        })
-        .then(() => trackerQuestions())
-};
-
-function employeeList() {
-    db.viewEmployeeList()
-        .then(([rows]) => {
-            console.table(rows)
-        })
-        .then(() => trackerQuestions())
-};
-
-function addDepartment() {
+ 
+addDepartment = function(){
     inquirer.prompt([
         {
             type: 'input',
-            name: 'newDepartment',
-            message: 'Enter The Name of The New Department.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Department Name Required.');
-                    return false
-                }
-            }
+            name: 'newDepartment', 
+            message: 'Enter New Department Name.'
         }
     ])
-        .then(({ newDepartment }) => {
-            const query = connection.query(
-                'INSERT INTO department SET ?',
-                {
-                    name: newDepartment
-                },
-                function (err, res) {
-                    if (err) throw err;
-                    // console.table(depname)
-                }
-            )
-        })
-        .then(() => departmentList())
+    .then(({newDepartment}) => {
+        const query = connection.query(
+            'INSERT INTO department SET ?',
+            {
+                name: newDepartment
+            },
+            function (err, res) {
+                if(err) throw err;
+            }
+        )
+    })
+    .then(()=> viewDepartment())
 }
-
-function addRole() {
+addRole = function(){
     inquirer.prompt([
         {
             type: 'input',
-            name: 'title',
-            message: 'Enter New Role.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Role Name Required.');
-                    return false
-                }
-            }
+            name: 'role', 
+            message: 'Enter Name of New Role.'
         },
         {
             type: 'input',
             name: 'salary',
-            message: 'Enter Salary For Newly Added Role.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Role Salary Required.');
-                    return false
-                }
-            }
+            message: 'Enter Salary For New Role'
         },
         {
             type: 'input',
-            name: 'departId',
-            message: 'Enter Department ID.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Department ID Required.');
-                    return false
-                }
-            }
-        }
-    ])
-        .then(({ title, salary, departId }) => {
-            const query = connection.query(
-                'INSERT INTO role SET ?',
-                {
-                    title: title,
-                    salary: salary,
-                    department_id: departId
-                },
-                function (err, res) {
-                    if (err) throw err;
-                }
-            )
-        })
-        .then(() => employeeRoles())
-}
+            name: 'departID',
+            message: 'Enter Department ID'
 
-function addEmployee() {
+        }
+    ]) 
+    .then(({role, salary, departID}) =>{
+        const query = connection.query(
+            'INSERT INTO role SET ?',
+            {
+                title: role,
+                salary: salary,
+                department_id: departID
+            },
+            function(err, res) {
+                if (err) throw err;
+            }
+        )
+    })
+    .then(() => viewRole())
+};
+
+addEmployee = function() {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'firstname',
-            message: 'Enter First Name.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('First Name Required.');
-                    return false
-                }
-            }
+            name: 'firstName',
+            message: 'Enter Employees First Name.'
         },
         {
             type: 'input',
-            name: 'lastname',
-            message: 'Enter Last Name.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Last Name Required.');
-                    return false
-                }
-            }
+            name: 'lastName',
+            message: 'Enter Employees Last Name.'
         },
         {
             type: 'input',
             name: 'roleId',
-            message: 'Enter Role ID.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Role ID Required.');
-                    return false
-                }
-            }
-        },
-        {
-            type: 'input',
-            name: 'managerId',
-            message: 'Enter Manager ID.',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Manager ID Required.');
-                    return false
-                }
-            }
+            message: 'Enter Employees Role ID.'
         }
-    ])
-        .then(({ firstname, lastname, roleId, managerId }) => {
-            const query = connection.query(
-                'INSERT INTO employee SET ?',
-                {
-                    first_name: firstname,
-                    last_name: lastname,
-                    role_id: roleId,
-                    manager_id: managerId
-                },
-                function (err, res) {
-                    if (err) throw err;
-                }
-            )
-        })
-        .then(() => employeeList())
-}
+    ]) 
+    .then (({firstName, lastName, roleId}) => {
+        const query = connection.query(
+            'INSERT INTO employee SET ?',
+            {
+                first_name: firstName,
+                last_name: lastName,
+                role_id: roleId
+            }
+        )
+    })
+    .then (() => viewEmployee())
+};
 
-function employeeUpdate() {
+updateEmployeeRole = function(){
     inquirer.prompt([
         {
             type: 'input',
@@ -239,7 +163,7 @@ function employeeUpdate() {
         {
             type: 'input',
             name: 'newRole',
-            message: 'Enter ID of New Role.'
+            message: 'Enter New Role ID For Employee'
         },
     ]) .then (({newRole, employeeList}) => {
         'UPDATE employee SET ? WHERE  ?', 
@@ -252,7 +176,7 @@ function employeeUpdate() {
             }
         ]
 
-    }) .then (() => employeeList()) 
+    }) .then (() => viewEmployee()) 
 
 }
 trackerQuestions();
